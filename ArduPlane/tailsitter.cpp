@@ -571,44 +571,6 @@ bool Tailsitter::transition_vtol_complete(void) const
     return false;
 }
 
-/**
- * hover around for a while after transition from fw to vtol to stabilize the aircraft.
- * @returns true if we are stabilizing the plane, otherwise false.
- */
-bool Tailsitter::tailsitter_run_stabilize_transition(void) {
-    uint32_t now = AP_HAL::millis();
-
-    if (fabsf(inertial_nav.get_velocity_z()) > 75.0f) {
-        tailsitter.transition_stabilization.last_wait_at = now;
-    }
-
-    // We have stabilized the aircraft if the z velocity has stayed within limits for a second or we try to stabilize too long
-    if (now - tailsitter.transition_stabilization.last_wait_at > 1000 || now - tailsitter.transition_stabilization.started_at > 5000) {
-        tailsitter.transition_stabilization.is_stabilized = true;
-        return false;
-    }
-
-    if (!tailsitter.transition_stabilization.is_initialized) {
-        init_hover();
-        // keep the plane climbing up
-        pos_control->init_z_controller_no_descent();
-        tailsitter.transition_stabilization.is_initialized = true;
-    }
-
-    // in auto modes keep the nose up, manual modes allow control
-    if (plane.control_mode != &plane.mode_qacro &&
-    plane.control_mode != &plane.mode_qhover &&
-    plane.control_mode != &plane.mode_qloiter &&
-    plane.control_mode != &plane.mode_qstabilize) {
-        plane.nav_roll_cd = 0;
-        plane.nav_pitch_cd = 0;
-    }
-
-    hold_hover(0.0f);  
-    
-    return true;
-}
-
 // handle different tailsitter input types
 void Tailsitter::check_input(void)
 {
