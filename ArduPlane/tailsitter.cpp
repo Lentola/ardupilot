@@ -575,7 +575,7 @@ bool Tailsitter::transition_vtol_complete(void) const
  * hover around for a while after transition from fw to vtol to stabilize the aircraft.
  * @returns true if we are stabilizing the plane, otherwise false.
  */
-bool QuadPlane::tailsitter_run_stabilize_transition(void) {
+bool Tailsitter::tailsitter_run_stabilize_transition(void) {
     uint32_t now = AP_HAL::millis();
 
     if (fabsf(inertial_nav.get_velocity_z()) > 75.0f) {
