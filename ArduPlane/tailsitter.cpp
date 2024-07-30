@@ -191,7 +191,7 @@ static const struct AP_Param::defaults_table_struct defaults_table_tailsitter[] 
 
 };
 
-Tailsitter::Tailsitter(QuadPlane &_quadplane, AP_MotorsMulticopter *&_motors, AP_AHRS& _ahrs) : quadplane(_quadplane), motors(_motors), ahrs(_ahrs)
+Tailsitter::Tailsitter(QuadPlane &_quadplane, AP_MotorsMulticopter *&_motors, AP_AHRS &_ahrs) : quadplane(_quadplane), motors(_motors), ahrs(_ahrs)
 {
     AP_Param::setup_object_defaults(this, var_info);
 }
@@ -1171,6 +1171,8 @@ MAV_VTOL_STATE Tailsitter_Transition::get_mav_vtol_state() const
 // only allow to weathervane once transition is complete and desired pitch has been reached
 bool Tailsitter_Transition::allow_weathervane()
 {
+
+    quadplane.tailsitter.run_stabilize_transition();
     return !tailsitter.in_vtol_transition() && (vtol_limit_start_ms == 0);
 }
 
