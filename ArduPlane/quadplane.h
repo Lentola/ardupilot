@@ -60,10 +60,11 @@ public:
     friend class ModeQAutotune;
     friend class ModeQAcro;
     friend class ModeLoiterAltQLand;
-    
+
     QuadPlane(AP_AHRS &_ahrs);
 
-    static QuadPlane *get_singleton() {
+    static QuadPlane *get_singleton()
+    {
         return _singleton;
     }
 
@@ -81,7 +82,7 @@ public:
     void update_land_positioning(void);
 
     void update_throttle_mix(void);
-    
+
     // update transition handling
     void update(void);
 
@@ -89,12 +90,14 @@ public:
     void set_armed(bool armed);
 
     // is VTOL available?
-    bool available(void) const {
+    bool available(void) const
+    {
         return initialised;
     }
 
     // is quadplane assisting?
-    bool in_assisted_flight(void) const {
+    bool in_assisted_flight(void) const
+    {
         return available() && assisted_flight;
     }
 
@@ -108,8 +111,8 @@ public:
 
     bool handle_do_vtol_transition(enum MAV_VTOL_STATE state) const;
 
-    bool do_vtol_takeoff(const AP_Mission::Mission_Command& cmd);
-    bool do_vtol_land(const AP_Mission::Mission_Command& cmd);
+    bool do_vtol_takeoff(const AP_Mission::Mission_Command &cmd);
+    bool do_vtol_land(const AP_Mission::Mission_Command &cmd);
     bool verify_vtol_takeoff(const AP_Mission::Mission_Command &cmd);
     bool verify_vtol_land(void);
     bool in_vtol_auto(void) const;
@@ -137,37 +140,39 @@ public:
 
     // return true if the user has set ENABLE
     bool enabled(void) const { return enable != 0; }
-    
+
     // is throttle controlled landing descent active?
     bool thr_ctrl_land;
 
     uint16_t get_pilot_velocity_z_max_dn() const;
-    
-    struct PACKED log_QControl_Tuning {
+
+    struct PACKED log_QControl_Tuning
+    {
         LOG_PACKET_HEADER;
         uint64_t time_us;
-        float    throttle_in;
-        float    angle_boost;
-        float    throttle_out;
-        float    throttle_hover;
-        float    desired_alt;
-        float    inav_alt;
-        int32_t  baro_alt;
-        int16_t  target_climb_rate;
-        int16_t  climb_rate;
-        float    throttle_mix;
-        uint8_t  transition_state;
-        uint8_t  assist;
+        float throttle_in;
+        float angle_boost;
+        float throttle_out;
+        float throttle_hover;
+        float desired_alt;
+        float inav_alt;
+        int32_t baro_alt;
+        int16_t target_climb_rate;
+        int16_t climb_rate;
+        float throttle_mix;
+        uint8_t transition_state;
+        uint8_t assist;
     };
 
     MAV_TYPE get_mav_type(void) const;
 
-    enum Q_ASSIST_STATE_ENUM {
+    enum Q_ASSIST_STATE_ENUM
+    {
         Q_ASSIST_DISABLED,
         Q_ASSIST_ENABLED,
         Q_ASSIST_FORCE,
     };
-    void set_q_assist_state(Q_ASSIST_STATE_ENUM state) {q_assist_state = state;};
+    void set_q_assist_state(Q_ASSIST_STATE_ENUM state) { q_assist_state = state; };
 
     // called when we change mode (for any mode, not just Q modes)
     void mode_enter(void);
@@ -198,8 +203,6 @@ private:
     // key aircraft parameters passed to multiple libraries
     AP_MultiCopter aparm;
 
-    AP_InertialNav inertial_nav{ahrs};
-
     AP_Enum<AP_Motors::motor_frame_class> frame_class;
     AP_Enum<AP_Motors::motor_frame_type> frame_type;
 
@@ -211,10 +214,14 @@ private:
     AC_PosControl *pos_control;
     AC_WPNav *wp_nav;
     AC_Loiter *loiter_nav;
-    
+
     // maximum vertical velocity the pilot may request
     AP_Float pilot_speed_z_max_up;
     AP_Float pilot_speed_z_max_dn;
+
+    // maximum vertical velocity the pilot may request
+    AP_Int16 pilot_velocity_z_max_up;
+    AP_Int16 pilot_velocity_z_max_dn;
 
     // vertical acceleration the pilot may request
     AP_Float pilot_accel_z;
@@ -237,7 +244,7 @@ private:
 
     // check for an EKF yaw reset
     void check_yaw_reset(void);
-    
+
     // hold hover (for transition)
     void hold_hover(float target_climb_rate_cms);
 
@@ -251,8 +258,8 @@ private:
     float get_pilot_input_yaw_rate_cds(void) const;
 
     // get overall desired yaw rate in cd/s
-    float get_desired_yaw_rate_cds(bool weathervane=true);
-    
+    float get_desired_yaw_rate_cds(bool weathervane = true);
+
     // get desired climb rate in cm/s
     float get_pilot_desired_climb_rate_cms(void) const;
 
@@ -264,7 +271,7 @@ private:
 
     // initialise throttle_wait when entering mode
     void init_throttle_wait();
-
+    void init_hover(void);
     // use multicopter rate controller
     void multicopter_attitude_rate_update(float yaw_rate_cds);
 
@@ -286,7 +293,7 @@ private:
     void Log_Write_QControl_Tuning();
     void log_QPOS(void);
     float landing_descent_rate_cms(float height_above_ground);
-    
+
     // setup correct aux channels for frame class
     void setup_default_channels(uint8_t num_motors);
 
@@ -296,7 +303,7 @@ private:
     void update_throttle_suppression(void);
 
     void run_z_controller(void);
-    void run_xy_controller(float accel_limit=0.0);
+    void run_xy_controller(float accel_limit = 0.0);
 
     void setup_defaults(void);
 
@@ -316,8 +323,10 @@ private:
     AP_Float transition_decel;
 
     // transition failure handling
-    struct TRANS_FAIL {
-        enum ACTION {
+    struct TRANS_FAIL
+    {
+        enum ACTION
+        {
             QLAND,
             QRTL
         };
@@ -325,7 +334,6 @@ private:
         AP_Enum<ACTION> action;
         bool warned;
     } transition_failure;
-
 
     // Quadplane trim, degrees
     AP_Float ahrs_trim_pitch;
@@ -355,17 +363,18 @@ private:
     // QRTL start altitude, meters
     AP_Int16 qrtl_alt;
     AP_Int16 qrtl_alt_min;
-    
+
     // alt to switch to QLAND_FINAL
     AP_Float land_final_alt;
     AP_Float vel_forward_alt_cutoff;
-    
+
     AP_Int8 enable;
     AP_Int8 transition_pitch_max;
 
     // control if a VTOL RTL will be used
     AP_Int8 rtl_mode;
-    enum RTL_MODE{
+    enum RTL_MODE
+    {
         NONE,
         SWITCH_QRTL,
         VTOL_APPROACH_QRTL,
@@ -407,19 +416,21 @@ private:
     AP_Float q_bck_pitch_lim;
 
     // which fwd throttle handling method is active
-    enum class ActiveFwdThr : uint8_t {
+    enum class ActiveFwdThr : uint8_t
+    {
         NONE = 0,
-        OLD  = 1,
-        NEW  = 2,
+        OLD = 1,
+        NEW = 2,
     };
     // override with AUX function
     bool vfwd_enable_active;
-    
+
     // specifies when the feature controlled by q_fwd_thr_gain and q_fwd_pitch_lim is used
-    enum class FwdThrUse : uint8_t {
-        OFF     = 0,
+    enum class FwdThrUse : uint8_t
+    {
+        OFF = 0,
         POSCTRL = 1,
-        ALL     = 2,
+        ALL = 2,
     };
     AP_Enum<FwdThrUse> q_fwd_thr_use;
 
@@ -429,7 +440,8 @@ private:
     // time we last got an EKF yaw reset
     uint32_t ekfYawReset_ms;
 
-    struct {
+    struct
+    {
         AP_Float gain;
         float integrator;
         uint32_t last_ms;
@@ -442,9 +454,9 @@ private:
 
     Location last_auto_target;
 
-    float q_fwd_throttle; // forward throttle used in q modes
-    float q_fwd_pitch_lim_cd; // forward pitch limit applied when using q_fwd_throttle
-    float q_bck_pitch_lim_cd; // backward pitch limit applied when using Q_BCK_PIT_LIM
+    float q_fwd_throttle;             // forward throttle used in q modes
+    float q_fwd_pitch_lim_cd;         // forward pitch limit applied when using q_fwd_throttle
+    float q_bck_pitch_lim_cd;         // backward pitch limit applied when using Q_BCK_PIT_LIM
     uint32_t q_pitch_limit_update_ms; // last time the backward pitch limit was updated
 
     // when did we last run the attitude controller?
@@ -454,16 +466,16 @@ private:
     Transition *transition = nullptr;
 
     // true when waiting for pilot throttle
-    bool throttle_wait:1;
+    bool throttle_wait : 1;
 
     // true when quad is assisting a fixed wing mode
-    bool assisted_flight:1;
+    bool assisted_flight : 1;
 
     // true when in angle assist
-    bool in_angle_assist:1;
+    bool in_angle_assist : 1;
 
     // are we in a guided takeoff?
-    bool guided_takeoff:1;
+    bool guided_takeoff : 1;
 
     /* if we arm in guided mode when we arm then go into a "waiting
        for takeoff command" state. In this state we are waiting for
@@ -489,7 +501,8 @@ private:
     bool guided_wait_takeoff;
     bool guided_wait_takeoff_on_mode_enter;
 
-    struct {
+    struct
+    {
         // time when motors reached lower limit
         uint32_t lower_limit_start_ms;
         uint32_t land_start_ms;
@@ -505,7 +518,8 @@ private:
     // time we last set the loiter target
     uint32_t last_loiter_ms;
 
-    enum position_control_state {
+    enum position_control_state
+    {
         QPOS_NONE = 0,
         QPOS_APPROACH,
         QPOS_AIRBRAKE,
@@ -516,19 +530,22 @@ private:
         QPOS_LAND_FINAL,
         QPOS_LAND_COMPLETE
     };
-    class PosControlState {
+    class PosControlState
+    {
     public:
-        enum position_control_state get_state() const {
+        enum position_control_state get_state() const
+        {
             return state;
         }
         void set_state(enum position_control_state s);
-        uint32_t time_since_state_start_ms() const {
+        uint32_t time_since_state_start_ms() const
+        {
             return AP_HAL::millis() - last_state_change_ms;
         }
         Vector3p target_cm;
         Vector2f xy_correction;
         Vector3f target_vel_cms;
-        bool slow_descent:1;
+        bool slow_descent : 1;
         bool pilot_correction_active;
         bool pilot_correction_done;
         uint32_t thrust_loss_start_ms;
@@ -546,19 +563,21 @@ private:
 
         float override_descent_rate;
         uint32_t last_override_descent_ms;
+
     private:
         uint32_t last_state_change_ms;
         enum position_control_state state;
     } poscontrol;
 
-    struct {
+    struct
+    {
         bool running;
-        uint32_t start_ms;            // system time the motor test began
-        uint32_t timeout_ms = 0;      // test will timeout this many milliseconds after the motor_test_start_ms
-        uint8_t seq = 0;              // motor sequence number of motor being tested
-        uint8_t throttle_type = 0;    // motor throttle type (0=throttle percentage, 1=PWM, 2=pilot throttle channel pass-through)
-        uint16_t throttle_value = 0;  // throttle to be sent to motor, value depends upon it's type
-        uint8_t motor_count;          // number of motors to cycle
+        uint32_t start_ms;           // system time the motor test began
+        uint32_t timeout_ms = 0;     // test will timeout this many milliseconds after the motor_test_start_ms
+        uint8_t seq = 0;             // motor sequence number of motor being tested
+        uint8_t throttle_type = 0;   // motor throttle type (0=throttle percentage, 1=PWM, 2=pilot throttle channel pass-through)
+        uint16_t throttle_value = 0; // throttle to be sent to motor, value depends upon it's type
+        uint8_t motor_count;         // number of motors to cycle
     } motor_test;
 
     // time of last control log message
@@ -571,10 +590,12 @@ private:
     Tiltrotor tiltrotor{*this, motors};
 
     // tailsitter control
-    Tailsitter tailsitter{*this, motors};
+    Tailsitter tailsitter{*this, motors, ahrs};
 
     // the attitude view of the VTOL attitude controller
     AP_AHRS_View *ahrs_view;
+
+    AP_InertialNav inertial_nav{ahrs};
 
     // time when motors were last active
     uint32_t last_motors_active_ms;
@@ -594,32 +615,34 @@ private:
 
     // additional options
     AP_Int32 options;
-    enum class OPTION {
-        LEVEL_TRANSITION=(1<<0),
-        ALLOW_FW_TAKEOFF=(1<<1),
-        ALLOW_FW_LAND=(1<<2),
-        RESPECT_TAKEOFF_FRAME=(1<<3),
-        MISSION_LAND_FW_APPROACH=(1<<4),
-        FS_QRTL=(1<<5),
-        IDLE_GOV_MANUAL=(1<<6),
-        Q_ASSIST_FORCE_ENABLE=(1<<7),
-        TAILSIT_Q_ASSIST_MOTORS_ONLY=(1<<8),
-        AIRMODE_UNUSED=(1<<9),
-        DISARMED_TILT=(1<<10),
-        DELAY_ARMING=(1<<11),
-        DISABLE_SYNTHETIC_AIRSPEED_ASSIST=(1<<12),
-        DISABLE_GROUND_EFFECT_COMP=(1<<13),
-        INGORE_FW_ANGLE_LIMITS_IN_Q_MODES=(1<<14),
-        THR_LANDING_CONTROL=(1<<15),
-        DISABLE_APPROACH=(1<<16),
-        REPOSITION_LANDING=(1<<17),
-        ONLY_ARM_IN_QMODE_OR_AUTO=(1<<18),
-        TRANS_FAIL_TO_FW=(1<<19),
-        FS_RTL=(1<<20),
-        DISARMED_TILT_UP=(1<<21),
-        SCALE_FF_ANGLE_P=(1<<22),
+    enum class OPTION
+    {
+        LEVEL_TRANSITION = (1 << 0),
+        ALLOW_FW_TAKEOFF = (1 << 1),
+        ALLOW_FW_LAND = (1 << 2),
+        RESPECT_TAKEOFF_FRAME = (1 << 3),
+        MISSION_LAND_FW_APPROACH = (1 << 4),
+        FS_QRTL = (1 << 5),
+        IDLE_GOV_MANUAL = (1 << 6),
+        Q_ASSIST_FORCE_ENABLE = (1 << 7),
+        TAILSIT_Q_ASSIST_MOTORS_ONLY = (1 << 8),
+        AIRMODE_UNUSED = (1 << 9),
+        DISARMED_TILT = (1 << 10),
+        DELAY_ARMING = (1 << 11),
+        DISABLE_SYNTHETIC_AIRSPEED_ASSIST = (1 << 12),
+        DISABLE_GROUND_EFFECT_COMP = (1 << 13),
+        INGORE_FW_ANGLE_LIMITS_IN_Q_MODES = (1 << 14),
+        THR_LANDING_CONTROL = (1 << 15),
+        DISABLE_APPROACH = (1 << 16),
+        REPOSITION_LANDING = (1 << 17),
+        ONLY_ARM_IN_QMODE_OR_AUTO = (1 << 18),
+        TRANS_FAIL_TO_FW = (1 << 19),
+        FS_RTL = (1 << 20),
+        DISARMED_TILT_UP = (1 << 21),
+        SCALE_FF_ANGLE_P = (1 << 22),
     };
-    bool option_is_set(OPTION option) const {
+    bool option_is_set(OPTION option) const
+    {
         return (options.get() & int32_t(option)) != 0;
     }
 
@@ -744,10 +767,11 @@ public:
     MAV_RESULT mavlink_motor_test_start(mavlink_channel_t chan, uint8_t motor_seq, uint8_t throttle_type,
                                         uint16_t throttle_value, float timeout_sec,
                                         uint8_t motor_count);
+
 private:
     void motor_test_stop();
 
     static QuadPlane *_singleton;
 };
 
-#endif  // HAL_QUADPLANE_ENABLED
+#endif // HAL_QUADPLANE_ENABLED
