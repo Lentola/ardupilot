@@ -60,6 +60,8 @@ public:
     // return true if transition to VTOL flight
     bool in_vtol_transition(uint32_t now = 0) const;
 
+    bool in_tailsitter_vtol_transition_stabilisation() const;
+
     // account for control surface speed scaling in VTOL modes
     void speed_scaling(void);
 
@@ -208,6 +210,7 @@ private:
     {
         TRANSITION_ANGLE_WAIT_FW,
         TRANSITION_ANGLE_WAIT_VTOL,
+        TRANSITION_STABILIZATION_WAIT_VTOL,
         TRANSITION_DONE
     } transition_state;
 

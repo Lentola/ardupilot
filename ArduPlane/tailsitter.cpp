@@ -695,6 +695,11 @@ bool Tailsitter::in_vtol_transition(uint32_t now) const
     return false;
 }
 
+bool Tailsitter::in_tailsitter_vtol_transition_stabilisation() const
+{
+    return transition->transition_state == Tailsitter_Transition::TRANSITION_STABILIZATION_WAIT_VTOL && !is_stabilized;
+}
+
 /*
   return true if we are a tailsitter in FW flight
  */
@@ -972,6 +977,9 @@ void Tailsitter_Transition::update()
         quadplane.motors_output();
         break;
     }
+    case TRANSITION_STABILIZATION_WAIT_VTOL:
+        // maybe the old logic goes here
+        break;
 
     case TRANSITION_ANGLE_WAIT_VTOL:
         // nothing to do, this is handled in the fixed wing attitude controller
@@ -1154,7 +1162,9 @@ MAV_VTOL_STATE Tailsitter_Transition::get_mav_vtol_state() const
 
     case TRANSITION_DONE:
         return MAV_VTOL_STATE_FW;
-
+    case TRANSITION_STABILIZATION_WAIT_VTOL:
+        // maybe the old logic goes here
+        break;
     case TRANSITION_ANGLE_WAIT_FW:
     {
         if (quadplane.in_vtol_mode())
