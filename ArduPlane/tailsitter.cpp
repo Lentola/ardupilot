@@ -992,6 +992,9 @@ void Tailsitter_Transition::update()
 
     case TRANSITION_DONE:
         break;
+
+    case TRANSITION_STABILISATION_WAIT_VTOL:
+        break;
     }
 }
 
@@ -1017,15 +1020,34 @@ void Tailsitter_Transition::VTOL_update()
         bool have_airspeed = quadplane.ahrs.airspeed_estimate(aspeed);
         // provide assistance in forward flight portion of tailsitter transition
         quadplane.assisted_flight = quadplane.assist.should_assist(aspeed, have_airspeed);
-        if (!quadplane.tailsitter.transition_vtol_complete())
+
+        if (transition_state != TRANSITION_STABILISATION_WAIT_VTOL && quadplane.tailsitter.transition_vtol_complete())
         {
-            return;
+            // Nose is up, wait for the plane to stabilize
+            transition_state = TRANSITION_STABILISATION_WAIT_VTOL;
+            quadplane.tailsitter.transition_stabilization.started_at = now;
+            quadplane.tailsitter.transition_stabilization.is_stabilized = false;
+            quadplane.tailsitter.transition_stabilization.is_initialized = false;
+            quadplane.tailsitter.transition_stabilization.last_wait_at = now;
+            gcs().send_text(MAV_SEVERITY_DEBUG, "Starting transition stabilization");
         }
-        // transition to VTOL complete, if armed set vtol rate limit starting point
-        if (plane.arming.is_armed_and_safety_off())
+
+        if (quadplane.tailsitter.transition_stabilization.is_stabilized && transition_state == TRANSITION_STABILISATION_WAIT_VTOL)
         {
-            vtol_limit_start_ms = now;
-            vtol_limit_initial_pitch = quadplane.ahrs_view->pitch_sensor;
+            /*
+              we have completed transition to VTOL as a tailsitter,
+              setup for the back transition when needed
+            */
+            transition_state = TRANSITION_ANGLE_WAIT_FW;
+            vtol_transition_start_ms = now;
+            gcs().send_text(MAV_SEVERITY_DEBUG, "Transition stabilization done");
+        }
+
+        if (in_vtol_transition_stabilisation())
+        {
+            tailsitter.run_stabilize_transition();
+            last_vtol_mode_ms = now;
+            return;
         }
     }
     else
@@ -1174,6 +1196,9 @@ MAV_VTOL_STATE Tailsitter_Transition::get_mav_vtol_state() const
 
     case TRANSITION_DONE:
         return MAV_VTOL_STATE_FW;
+
+    case TRANSITION_STABILISATION_WAIT_VTOL:
+        return MAV_VTOL_STATE_TRANSITION_TO_MC;
 
     case TRANSITION_ANGLE_WAIT_FW:
     {
