@@ -1025,10 +1025,10 @@ void Tailsitter_Transition::VTOL_update()
         {
             // Nose is up, wait for the plane to stabilize
             transition_state = TRANSITION_STABILISATION_WAIT_VTOL;
-            quadplane.tailsitter.transition_stabilization.started_at = now;
-            quadplane.tailsitter.transition_stabilization.is_stabilized = false;
-            quadplane.tailsitter.transition_stabilization.is_initialized = false;
-            quadplane.tailsitter.transition_stabilization.last_wait_at = now;
+            tailsitter.transition_stabilization.started_at = now;
+            tailsitter.transition_stabilization.is_stabilized = false;
+            tailsitter.transition_stabilization.is_initialized = false;
+            tailsitter.transition_stabilization.last_wait_at = now;
             gcs().send_text(MAV_SEVERITY_DEBUG, "Starting transition stabilization");
         }
 
