@@ -1021,7 +1021,7 @@ void Tailsitter_Transition::VTOL_update()
         // provide assistance in forward flight portion of tailsitter transition
         quadplane.assisted_flight = quadplane.assist.should_assist(aspeed, have_airspeed);
 
-        if (transition_state != TRANSITION_STABILISATION_WAIT_VTOL && quadplane.tailsitter.transition_vtol_complete())
+        if (transition_state != TRANSITION_STABILISATION_WAIT_VTOL && tailsitter.transition_vtol_complete())
         {
             // Nose is up, wait for the plane to stabilize
             transition_state = TRANSITION_STABILISATION_WAIT_VTOL;
@@ -1032,7 +1032,7 @@ void Tailsitter_Transition::VTOL_update()
             gcs().send_text(MAV_SEVERITY_DEBUG, "Starting transition stabilization");
         }
 
-        if (quadplane.tailsitter.transition_stabilization.is_stabilized && transition_state == TRANSITION_STABILISATION_WAIT_VTOL)
+        if (tailsitter.transition_stabilization.is_stabilized && transition_state == TRANSITION_STABILISATION_WAIT_VTOL)
         {
             /*
               we have completed transition to VTOL as a tailsitter,
