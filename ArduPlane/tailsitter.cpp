@@ -630,7 +630,7 @@ void Tailsitter::init_hover(void)
 }
 bool Tailsitter_Transition::in_vtol_transition_stabilisation() const
 {
-    return transition_state == TRANSITION_STABILISATION_WAIT_VTOL && !tailsitter.transition_stabilization.is_stabilized;
+    return transition_state == TRANSITION_STABILISATION_WAIT_VTOL && !quadplane.tailsitter.transition_stabilization.is_stabilized;
 }
 
 bool Tailsitter::run_stabilize_transition(void)
@@ -958,7 +958,7 @@ void Tailsitter_Transition::update()
 
     case TRANSITION_ANGLE_WAIT_FW:
     {
-        if (tailsitter.transition_fw_complete())
+        if (quadplane.tailsitter.transition_fw_complete())
         {
             transition_state = TRANSITION_DONE;
             if (plane.arming.is_armed_and_safety_off())
@@ -1021,18 +1021,18 @@ void Tailsitter_Transition::VTOL_update()
         // provide assistance in forward flight portion of tailsitter transition
         quadplane.assisted_flight = quadplane.assist.should_assist(aspeed, have_airspeed);
 
-        if (transition_state != TRANSITION_STABILISATION_WAIT_VTOL && tailsitter.transition_vtol_complete())
+        if (transition_state != TRANSITION_STABILISATION_WAIT_VTOL && quadplane.tailsitter.transition_vtol_complete())
         {
             // Nose is up, wait for the plane to stabilize
             transition_state = TRANSITION_STABILISATION_WAIT_VTOL;
-            tailsitter.transition_stabilization.started_at = now;
-            tailsitter.transition_stabilization.is_stabilized = false;
-            tailsitter.transition_stabilization.is_initialized = false;
-            tailsitter.transition_stabilization.last_wait_at = now;
+            quadplane.tailsitter.transition_stabilization.started_at = now;
+            quadplane.tailsitter.transition_stabilization.is_stabilized = false;
+            quadplane.tailsitter.transition_stabilization.is_initialized = false;
+            quadplane.tailsitter.transition_stabilization.last_wait_at = now;
             gcs().send_text(MAV_SEVERITY_DEBUG, "Starting transition stabilization");
         }
 
-        if (tailsitter.transition_stabilization.is_stabilized && transition_state == TRANSITION_STABILISATION_WAIT_VTOL)
+        if (quadplane.tailsitter.transition_stabilization.is_stabilized && transition_state == TRANSITION_STABILISATION_WAIT_VTOL)
         {
             /*
               we have completed transition to VTOL as a tailsitter,
@@ -1045,7 +1045,7 @@ void Tailsitter_Transition::VTOL_update()
 
         if (in_vtol_transition_stabilisation())
         {
-            tailsitter.run_stabilize_transition();
+            quadplane.tailsitter.run_stabilize_transition();
             last_vtol_mode_ms = now;
             return;
         }
