@@ -1032,7 +1032,7 @@ void Tailsitter_Transition::VTOL_update()
     last_vtol_mode_ms = now;
 
     gcs().send_text(MAV_SEVERITY_DEBUG, "Transition state: %i", transition_state);
-
+    // maybe need to add stabilisation wait vtol?
     if (transition_state == TRANSITION_ANGLE_WAIT_VTOL)
     {
         float aspeed;
