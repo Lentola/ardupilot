@@ -1016,8 +1016,6 @@ void Tailsitter_Transition::VTOL_update()
 {
     const uint32_t now = AP_HAL::millis();
 
-    uint32_t now = AP_HAL::millis();
-
     gcs().send_text(MAV_SEVERITY_DEBUG, "Time since last vtol mode: %i", now - last_vtol_mode_ms);
     if ((now - last_vtol_mode_ms) > 1000)
     {
