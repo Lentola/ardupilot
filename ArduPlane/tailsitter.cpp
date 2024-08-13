@@ -1009,6 +1009,8 @@ void Tailsitter_Transition::VTOL_update()
     const uint32_t now = AP_HAL::millis();
 
     gcs().send_text(MAV_SEVERITY_DEBUG, "Transition state A: %i", transition_state);
+    gcs().send_text(MAV_SEVERITY_DEBUG, "Last vtol mode ms: %i", last_vtol_mode_ms);
+
     if ((now - last_vtol_mode_ms) > 1000)
     {
         /*
@@ -1020,7 +1022,7 @@ void Tailsitter_Transition::VTOL_update()
         gcs().send_text(MAV_SEVERITY_DEBUG, "Setting tran-state to angle wait vtol");
         transition_state = TRANSITION_ANGLE_WAIT_VTOL;
     }
-    last_vtol_mode_ms = now;
+    // last_vtol_mode_ms = now;
 
     // maybe need to add stabilisation wait vtol?
     if (transition_state == TRANSITION_ANGLE_WAIT_VTOL)

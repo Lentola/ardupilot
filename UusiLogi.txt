@@ -1,0 +1,54 @@
+[0mSetting top to                           :[0m [32m/root/ardupilot[0m 
+[0mSetting out to                           :[0m [32m/root/ardupilot/build[0m 
+[0mAutoconfiguration                        :[0m [32menabled[0m 
+[0mChecking for program 'python'            :[0m [32m/usr/bin/python[0m 
+[0mChecking for python version >= 3.6.9     :[0m [32m3.10.12[0m 
+[0mSetting board to                         :[0m [32msitl[0m 
+[0mUsing toolchain                          :[0m [32mnative[0m 
+[0mChecking for 'g++' (C++ compiler)        :[0m [32m/usr/bin/g++[0m 
+[0mChecking for 'gcc' (C compiler)          :[0m [32m/usr/bin/gcc[0m 
+[0mChecking for c flags '-MMD'              :[0m [32myes[0m 
+[0mChecking for cxx flags '-MMD'            :[0m [32myes[0m 
+[0mCXX Compiler                             :[0m [32mg++ 11.4.0[0m 
+[0mChecking for need to link with librt     :[0m [32mnot necessary[0m 
+[0mChecking for feenableexcept              :[0m [32myes[0m 
+[0mEnabling -Werror                         :[0m [32myes[0m 
+[0mEnabled OpenDroneID                      :[0m [33mno[0m 
+[0mEnabled firmware ID checking             :[0m [33mno[0m 
+[0mGPS Debug Logging                        :[0m [33mno[0m 
+[0mEnabled custom controller                :[0m [32myes[0m 
+[0mChecking for HAVE_CMATH_ISFINITE         :[0m [32myes[0m 
+[0mChecking for HAVE_CMATH_ISINF            :[0m [32myes[0m 
+[0mChecking for HAVE_CMATH_ISNAN            :[0m [32myes[0m 
+[0mChecking for NEED_CMATH_ISFINITE_STD_NAMESPACE :[0m [32myes[0m 
+[0mChecking for NEED_CMATH_ISINF_STD_NAMESPACE    :[0m [32myes[0m 
+[0mChecking for NEED_CMATH_ISNAN_STD_NAMESPACE    :[0m [32myes[0m 
+[0mChecking for header endian.h                   :[0m [32myes[0m 
+[0mChecking for header byteswap.h                 :[0m [32myes[0m 
+[0mChecking for HAVE_MEMRCHR                      :[0m [32myes[0m 
+[0mConfigured VSCode Intellisense:                :[0m [33mno[0m 
+[0mDC_DSDL compiler                               :[0m [32m/root/ardupilot/modules/DroneCAN/dronecan_dsdlc/dronecan_dsdlc.py[0m 
+[0mSource is git repository                       :[0m [32myes[0m 
+[0mUpdate submodules                              :[0m [32myes[0m 
+[0mChecking for program 'git'                     :[0m [32m/usr/bin/git[0m 
+[0mChecking for program 'size'                    :[0m [32m/usr/bin/size[0m 
+[0mBenchmarks                                     :[0m [33mdisabled[0m 
+[0mUnit tests                                     :[0m [32menabled[0m 
+[0mScripting                                      :[0m [32mmaybe[0m 
+[0mScripting runtime checks                       :[0m [32menabled[0m 
+[0mDebug build                                    :[0m [33mdisabled[0m 
+[0mCoverage build                                 :[0m [33mdisabled[0m 
+[0mForce 32-bit build                             :[0m [33mdisabled[0m 
+[0mChecking for program 'rsync'                   :[0m [32m/usr/bin/rsync[0m 
+Removing target_list file /root/ardupilot/build/sitl/target_list
+'configure' finished successfully (2.052s)
+SIM_VEHICLE: Start
+SIM_VEHICLE: Killing tasks
+SIM_VEHICLE: Starting up at SITL location
+SIM_VEHICLE: WAF build
+SIM_VEHICLE: Configure waf
+SIM_VEHICLE: "/root/ardupilot/modules/waf/waf-light" "configure" "--board" "sitl"
+{'waf_target': 'bin/arduplane', 'default_params_filename': 'default_params/plane-tailsitter.parm', 'model': 'flightaxis', 'sitl-port': False}
+SIM_VEHICLE: Building
+SIM_VEHICLE: "/root/ardupilot/modules/waf/waf-light" "build" "--target" "bin/arduplane"
+SIM_VEHICLE: Killing tasks
