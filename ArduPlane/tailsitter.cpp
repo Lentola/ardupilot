@@ -637,7 +637,7 @@ bool Tailsitter_Transition::in_vtol_transition_stabilisation() const
 bool Tailsitter::run_stabilize_transition(void)
 {
     uint32_t now = AP_HAL::millis();
-    gcs().send_text(MAV_SEVERITY_DEBUG, "Current z velocity %i", fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()));
+    gcs().send_text(MAV_SEVERITY_DEBUG, "Current z velocity %f", fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()));
 
     if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > 75.0f)
     {
