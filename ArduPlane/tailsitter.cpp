@@ -1008,8 +1008,6 @@ void Tailsitter_Transition::VTOL_update()
 {
     const uint32_t now = AP_HAL::millis();
 
-    uint32_t now = AP_HAL::millis();
-
     gcs().send_text(MAV_SEVERITY_DEBUG, "Transition state A: %i", transition_state);
     if ((now - last_vtol_mode_ms) > 1000)
     {
