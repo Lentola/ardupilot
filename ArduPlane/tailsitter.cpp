@@ -631,7 +631,7 @@ void Tailsitter::init_hover(void)
 bool Tailsitter_Transition::in_vtol_transition_stabilisation() const
 {
     gcs().send_text(MAV_SEVERITY_DEBUG, "In stabilisation? %i", transition_state == TRANSITION_STABILISATION_WAIT_VTOL && !tailsitter.transition_stabilization.is_stabilized);
-    return transition_state == TRANSITION_STABILISATION_WAIT_VTOL && !quadplane.tailsitter.transition_stabilization.is_stabilized;
+    return transition_state == TRANSITION_STABILISATION_WAIT_VTOL && !tailsitter.transition_stabilization.is_stabilized;
 }
 
 bool Tailsitter::run_stabilize_transition(void)
@@ -644,6 +644,8 @@ bool Tailsitter::run_stabilize_transition(void)
         gcs().send_text(MAV_SEVERITY_DEBUG, "Over 75, setting last wait to now");
         transition_stabilization.last_wait_at = now;
     }
+    gcs().send_text(MAV_SEVERITY_DEBUG, "Last wait: %i", now - transition_stabilization.last_wait_at);
+    gcs().send_text(MAV_SEVERITY_DEBUG, "Started at: %i", now - transition_stabilization.started_at);
     // We have stabilized the aircraft if the z velocity has stayed within limits for a second or we try to stabilize too long
     if (now - transition_stabilization.last_wait_at > 1000 || now - transition_stabilization.started_at > 5000)
     {
@@ -964,7 +966,7 @@ void Tailsitter_Transition::update()
 
     case TRANSITION_ANGLE_WAIT_FW:
     {
-        if (quadplane.tailsitter.transition_fw_complete())
+        if (tailsitter.transition_fw_complete())
         {
             transition_state = TRANSITION_DONE;
             if (plane.arming.is_armed_and_safety_off())
@@ -980,7 +982,7 @@ void Tailsitter_Transition::update()
         quadplane.assisted_flight = true;
         uint32_t dt = now - fw_transition_start_ms;
         // multiply by 0.1 to convert (degrees/second * milliseconds) to centi degrees
-        plane.nav_pitch_cd = constrain_float(fw_transition_initial_pitch - (quadplane.tailsitter.transition_rate_fw * dt) * 0.1f * (plane.fly_inverted() ? -1.0f : 1.0f), -8500, 8500);
+        plane.nav_pitch_cd = constrain_float(fw_transition_initial_pitch - (tailsitter.transition_rate_fw * dt) * 0.1f * (plane.fly_inverted() ? -1.0f : 1.0f), -8500, 8500);
         plane.nav_roll_cd = 0;
         quadplane.disable_yaw_rate_time_constant();
         quadplane.attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(plane.nav_roll_cd,
@@ -1009,9 +1011,9 @@ void Tailsitter_Transition::VTOL_update()
     const uint32_t now = AP_HAL::millis();
 
     gcs().send_text(MAV_SEVERITY_DEBUG, "Transition state A: %i", transition_state);
-    gcs().send_text(MAV_SEVERITY_DEBUG, "Last vtol mode ms: %i", last_vtol_mode_ms);
+    gcs().send_text(MAV_SEVERITY_DEBUG, "Last vtol mode ms: %i", now - last_vtol_mode_ms);
 
-    if ((now - last_vtol_mode_ms) > 1000)
+    if (now - last_vtol_mode_ms > 1000)
     {
         /*
           we are just entering a VTOL mode as a tailsitter, set
@@ -1021,11 +1023,10 @@ void Tailsitter_Transition::VTOL_update()
          */
         gcs().send_text(MAV_SEVERITY_DEBUG, "Setting tran-state to angle wait vtol");
         transition_state = TRANSITION_ANGLE_WAIT_VTOL;
+        vtol_transition_start_ms = now;
+        vtol_transition_initial_pitch = constrain_float(quadplane.ahrs.pitch_sensor, -8500, 8500);
     }
-    // last_vtol_mode_ms = now;
-
-    // maybe need to add stabilisation wait vtol?
-    if (transition_state == TRANSITION_ANGLE_WAIT_VTOL)
+    else if (transition_state == TRANSITION_ANGLE_WAIT_VTOL || transition_state == TRANSITION_STABILISATION_WAIT_VTOL)
     {
         float aspeed;
         bool have_airspeed = quadplane.ahrs.airspeed_estimate(aspeed);
@@ -1033,21 +1034,21 @@ void Tailsitter_Transition::VTOL_update()
         quadplane.assisted_flight = quadplane.assist.should_assist(aspeed, have_airspeed);
 
         gcs().send_text(MAV_SEVERITY_DEBUG, "Transition state B: %i", transition_state);
-        gcs().send_text(MAV_SEVERITY_DEBUG, "vtol transition complete? %i", quadplane.tailsitter.transition_vtol_complete());
-        if (transition_state != TRANSITION_STABILISATION_WAIT_VTOL && quadplane.tailsitter.transition_vtol_complete())
+        gcs().send_text(MAV_SEVERITY_DEBUG, "vtol transition complete? %i", tailsitter.transition_vtol_complete());
+        if (transition_state != TRANSITION_STABILISATION_WAIT_VTOL && tailsitter.transition_vtol_complete())
         {
             // Nose is up, wait for the plane to stabilize
             gcs().send_text(MAV_SEVERITY_DEBUG, "Setting tran-state to stab wait vtol");
             transition_state = TRANSITION_STABILISATION_WAIT_VTOL;
-            quadplane.tailsitter.transition_stabilization.started_at = now;
-            quadplane.tailsitter.transition_stabilization.is_stabilized = false;
-            quadplane.tailsitter.transition_stabilization.is_initialized = false;
-            quadplane.tailsitter.transition_stabilization.last_wait_at = now;
+            tailsitter.transition_stabilization.started_at = now;
+            tailsitter.transition_stabilization.is_stabilized = false;
+            tailsitter.transition_stabilization.is_initialized = false;
+            tailsitter.transition_stabilization.last_wait_at = now;
         }
 
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Is stabilized? %i", quadplane.tailsitter.transition_stabilization.is_stabilized);
+        gcs().send_text(MAV_SEVERITY_DEBUG, "Is stabilized? %i", tailsitter.transition_stabilization.is_stabilized);
         gcs().send_text(MAV_SEVERITY_DEBUG, "Transition state C: %i", transition_state);
-        if (quadplane.tailsitter.transition_stabilization.is_stabilized && transition_state == TRANSITION_STABILISATION_WAIT_VTOL)
+        if (tailsitter.transition_stabilization.is_stabilized && transition_state == TRANSITION_STABILISATION_WAIT_VTOL)
         {
             /*
               we have completed transition to VTOL as a tailsitter,
@@ -1061,18 +1062,32 @@ void Tailsitter_Transition::VTOL_update()
         if (in_vtol_transition_stabilisation())
         {
             gcs().send_text(MAV_SEVERITY_DEBUG, "Running stabilize function");
-            quadplane.tailsitter.run_stabilize_transition();
+            tailsitter.run_stabilize_transition();
             last_vtol_mode_ms = now;
             return;
         }
     }
     else
     {
-
-        // Keep assistance reset while not checking
-        quadplane.assist.reset();
+        /*
+          setup the transition state appropriately for next time we go into a non-VTOL mode
+        */
+        vtol_transition_start_ms = 0;
+        if (quadplane.throttle_wait && !plane.is_flying())
+        {
+            transition_state = TRANSITION_DONE;
+        }
+        else
+        {
+            /*
+              setup for the transition back to fixed wing for later
+             */
+            transition_state = TRANSITION_ANGLE_WAIT_FW;
+            vtol_transition_start_ms = now;
+            vtol_transition_initial_pitch = constrain_float(quadplane.ahrs_view->pitch_sensor, -8500, 8500);
+        }
     }
-    restart();
+    last_vtol_mode_ms = now;
 }
 
 // return true if we should show VTOL view
