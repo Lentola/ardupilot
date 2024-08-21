@@ -664,6 +664,8 @@ bool Tailsitter::run_stabilize_transition(void)
         gcs().send_text(MAV_SEVERITY_DEBUG, "Initialization finished");
     }
 
+    gcs().send_text(MAV_SEVERITY_DEBUG, "CURRENT MODE: %i", plane.control_mode);
+
     // in auto modes keep the nose up, manual modes allow control
     if (plane.control_mode != &plane.mode_qacro &&
         plane.control_mode != &plane.mode_qhover &&
