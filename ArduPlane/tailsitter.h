@@ -125,7 +125,7 @@ public:
     AP_Float VTOL_pitch_scale;
     AP_Float VTOL_yaw_scale;
     AP_Float disk_loading_min_outflow;
-    AP_Float stabilization_z_speed;
+    AP_Float stabilization_speed_limit;
 
     transition_stab transition_stabilization;
 

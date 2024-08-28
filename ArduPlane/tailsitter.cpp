@@ -165,11 +165,12 @@ const AP_Param::GroupInfo Tailsitter::var_info[] = {
     // @Range: 0 15
     AP_GROUPINFO("MIN_VO", 22, Tailsitter, disk_loading_min_outflow, 0),
 
-    // @Param: STAB_Z_SPD
-    // @DisplayName: Tailsitter VTOL transition stabilisation vertical speed threshold
-    // @Description: The speed (cm/s) below which the plane must stay for a given time (default 1000 ms) before it is considered stabilized after a transition to VTOL.
+    // @Param: STBZS
+    // @DisplayName: Tailsitter VTOL transition stabilization z-speed threshold
+    // @Description: The speed below which the plane must stay for a given time before it is considered stabilized after a transition to VTOL
+    // @Units: cm/s
     // @Range: 0 500
-    AP_GROUPINFO("STAB_Z_SPD", 23, Tailsitter, stabilization_z_speed, 0),
+    AP_GROUPINFO("STBZS", 23, Tailsitter, stabilization_speed_limit, 200),
 
     AP_GROUPEND};
 
@@ -644,7 +645,7 @@ bool Tailsitter::run_stabilize_transition(void)
 {
     uint32_t now = AP_HAL::millis();
 
-    if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > stabilization_z_speed)
+    if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > stabilization_speed_limit)
     {
         transition_stabilization.last_wait_at = now;
     }
