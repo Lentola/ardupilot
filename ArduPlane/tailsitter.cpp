@@ -644,7 +644,7 @@ bool Tailsitter::run_stabilize_transition(void)
 {
     uint32_t now = AP_HAL::millis();
 
-    if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > 75.0f)
+    if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > stabilization_z_speed)
     {
         transition_stabilization.last_wait_at = now;
     }
