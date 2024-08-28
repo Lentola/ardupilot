@@ -165,6 +165,12 @@ const AP_Param::GroupInfo Tailsitter::var_info[] = {
     // @Range: 0 15
     AP_GROUPINFO("MIN_VO", 22, Tailsitter, disk_loading_min_outflow, 0),
 
+    // @Param: STAB_Z_SPD
+    // @DisplayName: Tailsitter VTOL transition stabilisation vertical speed threshold
+    // @Description: The speed (cm/s) below which the plane must stay for a given time (default 1000 ms) before it is considered stabilized after a transition to VTOL.
+    // @Range: 0 500
+    AP_GROUPINFO("STAB_Z_SPD", 23, Tailsitter, stabilization_z_speed, 0),
+
     AP_GROUPEND};
 
 /*
@@ -637,31 +643,25 @@ bool Tailsitter_Transition::in_vtol_transition_stabilisation() const
 bool Tailsitter::run_stabilize_transition(void)
 {
     uint32_t now = AP_HAL::millis();
-    gcs().send_text(MAV_SEVERITY_DEBUG, "Current z velocity %f", fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()));
 
     if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > 75.0f)
     {
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Over 75, setting last wait to now");
         transition_stabilization.last_wait_at = now;
     }
-    gcs().send_text(MAV_SEVERITY_DEBUG, "Last wait: %i", now - transition_stabilization.last_wait_at);
-    gcs().send_text(MAV_SEVERITY_DEBUG, "Started at: %i", now - transition_stabilization.started_at);
+
     // We have stabilized the aircraft if the z velocity has stayed within limits for a second or we try to stabilize too long
     if (now - transition_stabilization.last_wait_at > 1000 || now - transition_stabilization.started_at > 5000)
     {
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Aircraft stabilized");
         transition_stabilization.is_stabilized = true;
         return false;
     }
 
     if (!transition_stabilization.is_initialized)
     {
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Stabilization not initialized");
         init_hover();
         // keep the plane climbing up
         quadplane.pos_control->init_z_controller_no_descent();
         transition_stabilization.is_initialized = true;
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Initialization finished");
     }
 
     // in auto modes keep the nose up, manual modes allow control
@@ -1010,9 +1010,6 @@ void Tailsitter_Transition::VTOL_update()
 {
     const uint32_t now = AP_HAL::millis();
 
-    gcs().send_text(MAV_SEVERITY_DEBUG, "Transition state A: %i", transition_state);
-    gcs().send_text(MAV_SEVERITY_DEBUG, "Last vtol mode ms: %i", now - last_vtol_mode_ms);
-
     if (now - last_vtol_mode_ms > 1000)
     {
         /*
@@ -1021,7 +1018,6 @@ void Tailsitter_Transition::VTOL_update()
           the nose up before we start trying to fly as a
           multicopter
          */
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Setting tran-state to angle wait vtol");
         transition_state = TRANSITION_ANGLE_WAIT_VTOL;
         vtol_transition_start_ms = now;
         vtol_transition_initial_pitch = constrain_float(quadplane.ahrs.pitch_sensor, -8500, 8500);
@@ -1033,12 +1029,9 @@ void Tailsitter_Transition::VTOL_update()
         // provide assistance in forward flight portion of tailsitter transition
         quadplane.assisted_flight = quadplane.assist.should_assist(aspeed, have_airspeed);
 
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Transition state B: %i", transition_state);
-        gcs().send_text(MAV_SEVERITY_DEBUG, "vtol transition complete? %i", tailsitter.transition_vtol_complete());
         if (transition_state != TRANSITION_STABILISATION_WAIT_VTOL && tailsitter.transition_vtol_complete())
         {
             // Nose is up, wait for the plane to stabilize
-            gcs().send_text(MAV_SEVERITY_DEBUG, "Setting tran-state to stab wait vtol");
             transition_state = TRANSITION_STABILISATION_WAIT_VTOL;
             tailsitter.transition_stabilization.started_at = now;
             tailsitter.transition_stabilization.is_stabilized = false;
@@ -1046,8 +1039,6 @@ void Tailsitter_Transition::VTOL_update()
             tailsitter.transition_stabilization.last_wait_at = now;
         }
 
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Is stabilized? %i", tailsitter.transition_stabilization.is_stabilized);
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Transition state C: %i", transition_state);
         if (tailsitter.transition_stabilization.is_stabilized && transition_state == TRANSITION_STABILISATION_WAIT_VTOL)
         {
             /*
@@ -1058,7 +1049,6 @@ void Tailsitter_Transition::VTOL_update()
             vtol_transition_start_ms = now;
         }
 
-        gcs().send_text(MAV_SEVERITY_DEBUG, "In vtol transition stab? %i", in_vtol_transition_stabilisation());
         if (in_vtol_transition_stabilisation())
         {
             gcs().send_text(MAV_SEVERITY_DEBUG, "Running stabilize function");

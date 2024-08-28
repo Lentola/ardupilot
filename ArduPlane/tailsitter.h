@@ -125,6 +125,7 @@ public:
     AP_Float VTOL_pitch_scale;
     AP_Float VTOL_yaw_scale;
     AP_Float disk_loading_min_outflow;
+    AP_Float stabilization_z_speed;
 
     transition_stab transition_stabilization;
 
@@ -160,6 +161,7 @@ private:
     bool _have_rudder;
     bool _have_elevon;
     bool _have_v_tail;
+
 
     // refences for convenience
     QuadPlane &quadplane;
@@ -233,6 +235,7 @@ private:
 
     // time when we were last in a vtol control mode
     uint32_t last_vtol_mode_ms;
+
 
     Tailsitter &tailsitter;
 };
