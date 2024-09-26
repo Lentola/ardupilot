@@ -165,6 +165,13 @@ const AP_Param::GroupInfo Tailsitter::var_info[] = {
     // @Range: 0 15
     AP_GROUPINFO("MIN_VO", 22, Tailsitter, disk_loading_min_outflow, 0),
 
+    // @Param: STBZS
+    // @DisplayName: Tailsitter VTOL transition stabilization z-speed threshold
+    // @Description: The speed below which the plane must stay for a given time before it is considered stabilized after a transition to VTOL
+    // @Units: cm/s
+    // @Range: 0 500
+    AP_GROUPINFO("STBZS", 23, Tailsitter, stabilization_speed_limit, 200),
+
     AP_GROUPEND};
 
 /*
@@ -654,6 +661,16 @@ bool Tailsitter::in_vtol_transition(uint32_t now) const
         return true;
     }
     return false;
+}
+
+void Tailsitter::init_hover(void)
+{
+    // set vertical speed and acceleration limits
+    quadplane.pos_control->set_max_speed_accel_z(-quadplane.get_pilot_velocity_z_max_dn(), quadplane.pilot_speed_z_max_up, quadplane.pilot_accel_z);
+    quadplane.pos_control->set_correction_speed_accel_z(-quadplane.get_pilot_velocity_z_max_dn(), quadplane.pilot_speed_z_max_up, quadplane.pilot_accel_z);
+    quadplane.set_climb_rate_cms(0);
+
+    quadplane.init_throttle_wait();
 }
 
 bool Tailsitter::run_stabilize_transition(void)

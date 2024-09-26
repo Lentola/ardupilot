@@ -24,13 +24,13 @@ class AP_MotorsMulticopter;
 class Tailsitter_Transition;
 class Tailsitter
 {
-friend class QuadPlane;
-friend class Plane;
+    friend class QuadPlane;
+    friend class Plane;
+
 public:
+    Tailsitter(QuadPlane &_quadplane, AP_MotorsMulticopter *&_motors);
 
-    Tailsitter(QuadPlane& _quadplane, AP_MotorsMulticopter*& _motors);
-
-    bool enabled() const { return (enable > 0) && setup_complete;}
+    bool enabled() const { return (enable > 0) && setup_complete; }
 
     void setup();
 
@@ -39,7 +39,7 @@ public:
 
     // return true when flying a tailsitter in VTOL
     bool active(void);
-    
+
     // create outputs for tailsitters
     void output(void);
 
@@ -70,22 +70,36 @@ public:
     // Write tailsitter specific log
     void write_log();
 
+    void init_hover(void);
+
+    bool run_stabilize_transition(void);
+
     // tailsitter speed scaler
     float last_spd_scaler = 1.0f; // used to slew rate limiting with TAILSITTER_GSCL_ATT_THR option
 
     static const struct AP_Param::GroupInfo var_info[];
 
     // bit 0 enables plane mode and bit 1 enables body-frame roll mode
-    enum input {
-        TAILSITTER_INPUT_PLANE   = (1U<<0),
-        TAILSITTER_INPUT_BF_ROLL = (1U<<1)
+    enum input
+    {
+        TAILSITTER_INPUT_PLANE = (1U << 0),
+        TAILSITTER_INPUT_BF_ROLL = (1U << 1)
     };
 
-    enum gscl_mask {
-        TAILSITTER_GSCL_THROTTLE = (1U<<0),
-        TAILSITTER_GSCL_ATT_THR = (1U<<1),
-        TAILSITTER_GSCL_DISK_THEORY = (1U<<2),
-        TAILSITTER_GSCL_ALTITUDE = (1U<<3),
+    enum gscl_mask
+    {
+        TAILSITTER_GSCL_THROTTLE = (1U << 0),
+        TAILSITTER_GSCL_ATT_THR = (1U << 1),
+        TAILSITTER_GSCL_DISK_THEORY = (1U << 2),
+        TAILSITTER_GSCL_ALTITUDE = (1U << 3),
+    };
+
+    struct transition_stab
+    {
+        bool is_initialized = false; // has the transition stabilizing hover been initialized?
+        bool is_stabilized = true;   // has the transition been stabilized yet?
+        uint32_t last_wait_at = 0;   // when were we still waiting for the transition to stabilize
+        uint32_t started_at = 0;     // when was the stabilisation started at?
     };
 
     AP_Int8 enable;
@@ -110,13 +124,16 @@ public:
     AP_Float VTOL_pitch_scale;
     AP_Float VTOL_yaw_scale;
     AP_Float disk_loading_min_outflow;
+    AP_Float stabilization_speed_limit;
 
-    AP_MotorsTailsitter* tailsitter_motors;
+    transition_stab transition_stabilization;
+
+    AP_MotorsTailsitter *tailsitter_motors;
 
 private:
-
     // Tailsitter specific log message
-    struct PACKED log_tailsitter {
+    struct PACKED log_tailsitter
+    {
         LOG_PACKET_HEADER;
         uint64_t time_us;
         float throttle_scaler;
@@ -125,12 +142,12 @@ private:
     };
 
     // Data to be logged
-    struct {
+    struct
+    {
         float throttle_scaler;
         float speed_scaler;
         float min_throttle;
     } log_data;
-
 
     bool setup_complete;
 
@@ -145,22 +162,20 @@ private:
     bool _have_v_tail;
 
     // refences for convenience
-    QuadPlane& quadplane;
-    AP_MotorsMulticopter*& motors;
+    QuadPlane &quadplane;
+    AP_MotorsMulticopter *&motors;
 
     // transition logic
-    Tailsitter_Transition* transition;
-
+    Tailsitter_Transition *transition;
 };
-
 
 // Transition for tailsitters
 class Tailsitter_Transition : public Transition
 {
-friend class Tailsitter;
-public:
+    friend class Tailsitter;
 
-    Tailsitter_Transition(QuadPlane& _quadplane, AP_MotorsMulticopter*& _motors, Tailsitter& _tailsitter):Transition(_quadplane, _motors), tailsitter(_tailsitter) {};
+public:
+    Tailsitter_Transition(QuadPlane &_quadplane, AP_MotorsMulticopter *&_motors, Tailsitter &_tailsitter) : Transition(_quadplane, _motors), tailsitter(_tailsitter) {};
 
     void update() override;
 
@@ -179,19 +194,19 @@ public:
 
     bool show_vtol_view() const override;
 
-    void set_FW_roll_pitch(int32_t& nav_pitch_cd, int32_t& nav_roll_cd) override;
+    void set_FW_roll_pitch(int32_t &nav_pitch_cd, int32_t &nav_roll_cd) override;
 
     bool allow_stick_mixing() const override;
 
     MAV_VTOL_STATE get_mav_vtol_state() const override;
 
-    bool set_VTOL_roll_pitch_limit(int32_t& nav_roll_cd, int32_t& nav_pitch_cd) override;
+    bool set_VTOL_roll_pitch_limit(int32_t &nav_roll_cd, int32_t &nav_pitch_cd) override;
 
     bool allow_weathervane() override;
 
 private:
-
-    enum {
+    enum
+    {
         TRANSITION_ANGLE_WAIT_FW,
         TRANSITION_ANGLE_WAIT_VTOL,
         TRANSITION_DONE
@@ -216,6 +231,5 @@ private:
     // time when we were last in a vtol control mode
     uint32_t last_vtol_mode_ms;
 
-    Tailsitter& tailsitter;
-
+    Tailsitter &tailsitter;
 };
