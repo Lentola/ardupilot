@@ -998,6 +998,9 @@ void Tailsitter_Transition::update()
         // nothing to do, this is handled in the fixed wing attitude controller
         break;
 
+    case TRANSITION_STABILIZATION_WAIT_VTOL:
+        break;
+
     case TRANSITION_DONE:
         break;
     }
@@ -1047,7 +1050,7 @@ void Tailsitter_Transition::VTOL_update()
                 transition_state = TRANSITION_ANGLE_WAIT_FW;
                 vtol_transition_start_ms = now;
             }
-            if (tailsitter.in_vtol_transition_stabilisation())
+            if (in_vtol_transition_stabilisation())
             {
                 tailsitter.run_stabilize_transition();
                 last_vtol_mode_ms = now;
@@ -1210,6 +1213,9 @@ MAV_VTOL_STATE Tailsitter_Transition::get_mav_vtol_state() const
         }
         return MAV_VTOL_STATE_TRANSITION_TO_FW;
     }
+
+    case TRANSITION_STABILIZATION_WAIT_VTOL:
+        return MAV_VTOL_STATE_TRANSITION_TO_MC;
     }
 
     return MAV_VTOL_STATE_UNDEFINED;
