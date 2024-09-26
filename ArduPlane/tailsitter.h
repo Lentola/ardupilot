@@ -100,6 +100,7 @@ public:
         bool is_stabilized = true;   // has the transition been stabilized yet?
         uint32_t last_wait_at = 0;   // when were we still waiting for the transition to stabilize
         uint32_t started_at = 0;     // when was the stabilisation started at?
+        uint32_t last_stabilizition_at = 0; // when has plane last been running stabilization
     };
 
     AP_Int8 enable;
@@ -204,13 +205,17 @@ public:
 
     bool allow_weathervane() override;
 
+    bool in_vtol_transition_stabilisation() const;
+
 private:
     enum
     {
         TRANSITION_ANGLE_WAIT_FW,
         TRANSITION_ANGLE_WAIT_VTOL,
+        TRANSITION_STABILIZATION_WAIT_VTOL,
         TRANSITION_DONE
     } transition_state;
+
 
     // for transition to VTOL flight
     uint32_t vtol_transition_start_ms;
