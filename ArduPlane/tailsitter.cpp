@@ -714,45 +714,6 @@ int8_t Tailsitter::get_transition_angle_vtol() const
     }
     return transition_angle_vtol;
 }
-
-bool Tailsitter::run_stabilize_transition(void)
-{
-    uint32_t now = AP_HAL::millis();
-
-    if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > stabilization_speed_limit)
-    {
-        transition_stabilization.last_wait_at = now;
-    }
-
-    // We have stabilized the aircraft if the z velocity has stayed within limits for a second or we try to stabilize too long
-    if (now - transition_stabilization.last_wait_at > 1000 || now - transition_stabilization.started_at > 5000)
-    {
-        transition_stabilization.is_stabilized = true;
-        return false;
-    }
-
-    if (!transition_stabilization.is_initialized)
-    {
-        init_hover();
-        // keep the plane climbing up
-        quadplane.pos_control->init_z_controller_no_descent();
-        transition_stabilization.is_initialized = true;
-    }
-
-    // in auto modes keep the nose up, manual modes allow control
-    if (plane.control_mode != &plane.mode_qacro &&
-        plane.control_mode != &plane.mode_qhover &&
-        plane.control_mode != &plane.mode_qloiter &&
-        plane.control_mode != &plane.mode_qstabilize)
-    {
-        plane.nav_roll_cd = 0;
-        plane.nav_pitch_cd = 0;
-    }
-
-    quadplane.hold_hover(0.0f);
-
-    return true;
-}
 /*
   account for speed scaling of control surfaces in VTOL modes
 */
