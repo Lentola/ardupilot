@@ -657,14 +657,6 @@ bool Tailsitter::run_stabilize_transition(void)
         return false;
     }
 
-    if (!transition_stabilization.is_initialized)
-    {
-        init_hover();
-        // keep the plane climbing up
-        quadplane.pos_control->init_z_controller_no_descent();
-        transition_stabilization.is_initialized = true;
-    }
-
     // in auto modes keep the nose up, manual modes allow control
     if (plane.control_mode != &plane.mode_qacro &&
         plane.control_mode != &plane.mode_qhover &&
