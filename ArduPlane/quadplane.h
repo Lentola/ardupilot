@@ -79,6 +79,7 @@ public:
 
     void vtol_position_controller(void);
     void setup_target_position(void);
+    void setup_target_position_landing(void);
     void takeoff_controller(void);
     void waypoint_controller(void);
     void update_land_positioning(void);

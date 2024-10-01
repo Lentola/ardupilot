@@ -7,7 +7,7 @@ bool ModeQLand::_enter()
 {
     plane.mode_qloiter._enter();
     quadplane.throttle_wait = false;
-    quadplane.setup_target_position();
+    quadplane.setup_target_position_landing();
     poscontrol.set_state(QuadPlane::QPOS_LAND_DESCEND);
     poscontrol.pilot_correction_done = false;
     quadplane.last_land_final_agl = plane.relative_ground_altitude(plane.g.rangefinder_landing);

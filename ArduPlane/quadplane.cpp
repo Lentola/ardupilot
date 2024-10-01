@@ -3031,6 +3031,38 @@ float QuadPlane::get_scaled_wp_speed(float target_bearing_deg) const
 }
 
 /*
+ setup the target position for final landing
+*/
+void QuadPlane::setup_target_position_landing(void)
+{
+    const Location &loc = plane.next_WP_loc;
+    Location origin;
+    if (!ahrs.get_origin(origin)) {
+        origin.zero();
+    }
+    if (!in_vtol_land_approach() || poscontrol.get_state() > QPOS_APPROACH) {
+        set_desired_spool_state(AP_Motors::DesiredSpoolState::THROTTLE_UNLIMITED);
+    }
+
+    Vector2f diff2d = origin.get_distance_NE(loc);
+    diff2d += poscontrol.xy_correction;
+    poscontrol.target_cm.x = diff2d.x * 100;
+    poscontrol.target_cm.y = diff2d.y * 100;
+    poscontrol.target_cm.z = plane.next_WP_loc.alt - origin.alt;
+
+    // Fetch wind estimate (in m/s)
+    Vector3f wind = ahrs.wind_estimate();
+
+    // Convert wind vector to cm/s and apply to target position
+    poscontrol.target_cm.x += wind.x * 100;  // Adjust x based on wind's x-component (East-West)
+    poscontrol.target_cm.y += wind.y * 100;  // Adjust y based on wind's y-component (North-South)
+
+    // set vertical speed and acceleration limits
+    pos_control->set_max_speed_accel_z(-get_pilot_velocity_z_max_dn(), pilot_speed_z_max_up * 100, pilot_accel_z * 100);
+    pos_control->set_correction_speed_accel_z(-get_pilot_velocity_z_max_dn(), pilot_speed_z_max_up * 100, pilot_accel_z * 100);
+}
+
+/*
   setup the target position based on plane.next_WP_loc
  */
 void QuadPlane::setup_target_position(void)
