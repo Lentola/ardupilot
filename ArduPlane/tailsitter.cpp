@@ -682,24 +682,18 @@ bool Tailsitter::run_stabilize_transition(void)
 {
     uint32_t now = AP_HAL::millis();
 
-    if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > stabilization_speed_limit)
+    if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > 130.0f)
     {
+        gcs().send_text(MAV_SEVERITY_DEBUG, "Speed %f", (float)fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()));
         transition_stabilization.last_wait_at = now;
     }
 
     // We have stabilized the aircraft if the z velocity has stayed within limits for a second or we try to stabilize too long
     if (now - transition_stabilization.last_wait_at > 1000 || now - transition_stabilization.started_at > 5000)
     {
+        gcs().send_text(MAV_SEVERITY_DEBUG, "Stabilization complete in %i", now - transition_stabilization.started_at);
         transition_stabilization.is_stabilized = true;
         return false;
-    }
-
-    if (!transition_stabilization.is_initialized)
-    {
-        init_hover();
-        // keep the plane climbing up
-        quadplane.pos_control->init_z_controller_no_descent();
-        transition_stabilization.is_initialized = true;
     }
 
     // in auto modes keep the nose up, manual modes allow control
@@ -1010,7 +1004,7 @@ void Tailsitter_Transition::VTOL_update()
 {
     const uint32_t now = AP_HAL::millis();
 
-    if ((now - last_vtol_mode_ms) > 1000)
+    if (now - last_vtol_mode_ms > 1000)
     {
         /*
           we are just entering a VTOL mode as a tailsitter, set
@@ -1019,54 +1013,63 @@ void Tailsitter_Transition::VTOL_update()
           multicopter
          */
         transition_state = TRANSITION_ANGLE_WAIT_VTOL;
-        last_vtol_mode_ms = now;
-        vtol_transition_initial_pitch = constrain_float(ahrs.pitch_sensor, -8500, 8500);
+        vtol_transition_start_ms = now;
+        vtol_transition_initial_pitch = constrain_float(quadplane.ahrs.pitch_sensor, -8500, 8500);
     }
-
     else if (transition_state == TRANSITION_ANGLE_WAIT_VTOL || transition_state == TRANSITION_STABILIZATION_WAIT_VTOL)
     {
         float aspeed;
         bool have_airspeed = quadplane.ahrs.airspeed_estimate(aspeed);
         // provide assistance in forward flight portion of tailsitter transition
         quadplane.assisted_flight = quadplane.should_assist(aspeed, have_airspeed);
-        if (transition_state != TRANSITION_STABILIZATION_WAIT_VTOL && !quadplane.tailsitter.transition_vtol_complete())
+        if (transition_state != TRANSITION_STABILIZATION_WAIT_VTOL && tailsitter.transition_vtol_complete())
         {
-            if (now - tailsitter.transition_stabilization.last_stabilizition_at > 1500)
-            {
-                // Nose is up, wait for the plane to stabilize
-                transition_state = TRANSITION_STABILIZATION_WAIT_VTOL;
-                tailsitter.transition_stabilization.started_at = now;
-                tailsitter.transition_stabilization.is_stabilized = false;
-                tailsitter.transition_stabilization.is_initialized = false;
-                tailsitter.transition_stabilization.last_wait_at = now;
-                gcs().send_text(MAV_SEVERITY_DEBUG, "Starting transition stabilisation");
-            }
-            else
-            {
-                /*
-                  no need to stabilize.
-                  we have completed transition to VTOL as a tailsitter,
-                  setup for the back transition when needed
-                */
-                transition_state = TRANSITION_ANGLE_WAIT_FW;
-                vtol_transition_start_ms = now;
-            }
-            if (in_vtol_transition_stabilisation())
-            {
-                tailsitter.run_stabilize_transition();
-                last_vtol_mode_ms = now;
-                tailsitter.transition_stabilization.last_stabilizition_at = now;
-                return;
-            }
+            // Nose is up, wait for the plane to stabilize
+            transition_state = TRANSITION_STABILIZATION_WAIT_VTOL;
+            tailsitter.transition_stabilization.started_at = now;
+            tailsitter.transition_stabilization.is_stabilized = false;
+            tailsitter.transition_stabilization.is_initialized = false;
+            tailsitter.transition_stabilization.last_wait_at = now;
         }
-        // transition to VTOL complete, if armed set vtol rate limit starting point
-        if (plane.arming.is_armed_and_safety_off())
+
+        if (tailsitter.transition_stabilization.is_stabilized && transition_state == TRANSITION_STABILIZATION_WAIT_VTOL)
         {
-            vtol_limit_start_ms = now;
-            vtol_limit_initial_pitch = quadplane.ahrs_view->pitch_sensor;
+            /*
+              we have completed transition to VTOL as a tailsitter,
+              setup for the back transition when needed
+            */
+            transition_state = TRANSITION_ANGLE_WAIT_FW;
+            vtol_transition_start_ms = now;
+        }
+
+        if (in_vtol_transition_stabilisation())
+        {
+            tailsitter.run_stabilize_transition();
+            last_vtol_mode_ms = now;
+            return;
         }
     }
-    restart();
+    else
+    {
+        /*
+          setup the transition state appropriately for next time we go into a non-VTOL mode
+        */
+        vtol_transition_start_ms = 0;
+        if (quadplane.throttle_wait && !plane.is_flying())
+        {
+            transition_state = TRANSITION_DONE;
+        }
+        else
+        {
+            /*
+              setup for the transition back to fixed wing for later
+             */
+            transition_state = TRANSITION_ANGLE_WAIT_FW;
+            vtol_transition_start_ms = now;
+            vtol_transition_initial_pitch = constrain_float(quadplane.ahrs_view->pitch_sensor, -8500, 8500);
+        }
+    }
+    last_vtol_mode_ms = now;
 }
 
 // return true if we should show VTOL view
