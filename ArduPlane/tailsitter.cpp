@@ -1019,10 +1019,11 @@ void Tailsitter_Transition::VTOL_update()
           multicopter
          */
         transition_state = TRANSITION_ANGLE_WAIT_VTOL;
+        last_vtol_mode_ms = now;
+        vtol_transition_initial_pitch = constrain_float(ahrs.pitch_sensor, -8500, 8500);
     }
-    last_vtol_mode_ms = now;
 
-    if (transition_state == TRANSITION_ANGLE_WAIT_VTOL || transition_state == TRANSITION_STABILIZATION_WAIT_VTOL)
+    else if (transition_state == TRANSITION_ANGLE_WAIT_VTOL || transition_state == TRANSITION_STABILIZATION_WAIT_VTOL)
     {
         float aspeed;
         bool have_airspeed = quadplane.ahrs.airspeed_estimate(aspeed);
