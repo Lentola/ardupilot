@@ -707,6 +707,8 @@ bool Tailsitter::run_stabilize_transition(void)
     }
 
     quadplane.hold_hover(0.0f);
+    gcs().send_text(MAV_SEVERITY_DEBUG, "run_xy_controller");
+    quadplane.run_xy_controller();
 
     return true;
 }
