@@ -684,14 +684,12 @@ bool Tailsitter::run_stabilize_transition(void)
 
     if (fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()) > 130.0f)
     {
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Speed %f", (float)fabsf(quadplane.inertial_nav.get_velocity_z_up_cms()));
         transition_stabilization.last_wait_at = now;
     }
 
     // We have stabilized the aircraft if the z velocity has stayed within limits for a second or we try to stabilize too long
     if (now - transition_stabilization.last_wait_at > 1000 || now - transition_stabilization.started_at > 5000)
     {
-        gcs().send_text(MAV_SEVERITY_DEBUG, "Stabilization complete in %i", now - transition_stabilization.started_at);
         transition_stabilization.is_stabilized = true;
         return false;
     }
@@ -705,9 +703,16 @@ bool Tailsitter::run_stabilize_transition(void)
         plane.nav_roll_cd = 0;
         plane.nav_pitch_cd = 0;
     }
-
+    
+    bool totta = 1;
+    
+    if(totta){
+      position_control->init_xy_controller_stopping_point();
+      totta = 0;
+    }
+    
     quadplane.hold_hover(0.0f);
-    gcs().send_text(MAV_SEVERITY_DEBUG, "run_xy_controller");
+    gcs().send_text(MAV_SEVERITY_DEBUG, "Pysaytetaan kone");
     quadplane.run_xy_controller();
 
     return true;
