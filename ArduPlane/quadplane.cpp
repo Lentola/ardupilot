@@ -2098,6 +2098,7 @@ void QuadPlane::motors_output(bool run_rate_controller)
  */
 bool QuadPlane::handle_do_vtol_transition(enum MAV_VTOL_STATE state) const
 {
+        gcs().send_text(MAV_SEVERITY_DEBUG, "MAX ANGLE %f", pos_control->get_lean_angle_max_cd());
     if (!available()) {
         gcs().send_text(MAV_SEVERITY_NOTICE, "VTOL not available");
         return false;
@@ -2111,6 +2112,7 @@ bool QuadPlane::handle_do_vtol_transition(enum MAV_VTOL_STATE state) const
         if (!plane.auto_state.vtol_mode) {
             gcs().send_text(MAV_SEVERITY_NOTICE, "Entered VTOL mode");
         }
+        pos_control->set_lean_angle_max_cd(0.01);
         plane.auto_state.vtol_mode = true;
         // This is a precaution. It should be looked after by the call to QuadPlane::mode_enter(void) on mode entry.
         plane.quadplane.q_fwd_throttle = 0.0f;

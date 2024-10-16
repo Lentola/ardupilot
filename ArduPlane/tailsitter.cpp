@@ -869,7 +869,6 @@ void Tailsitter_Transition::update()
 void Tailsitter_Transition::VTOL_update()
 {
     const uint32_t now = AP_HAL::millis();
-
     if ((now - last_vtol_mode_ms) > 1000) {
         /*
           we are just entering a VTOL mode as a tailsitter, set
