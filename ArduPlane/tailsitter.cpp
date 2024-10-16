@@ -703,17 +703,15 @@ bool Tailsitter::run_stabilize_transition(void)
         plane.nav_roll_cd = 0;
         plane.nav_pitch_cd = 0;
     }
-    
-    bool totta = 1;
-    
-    if(totta){
-      position_control->init_xy_controller_stopping_point();
-      totta = 0;
+    if (!transition_stabilization.is_initialized)
+    {
+        quadplane.pos_control->init_xy_controller_stopping_point();
+        position_control->init_xy_controller_stopping_point();
+        transition_stabilization.is_initialized = true;
     }
-    
     quadplane.hold_hover(0.0f);
     gcs().send_text(MAV_SEVERITY_DEBUG, "Pysaytetaan kone");
-    quadplane.run_xy_controller();
+    quadplane.pos_control->run_xy_controller();
 
     return true;
 }
