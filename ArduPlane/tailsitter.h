@@ -39,7 +39,7 @@ public:
 
     // return true when flying a tailsitter in VTOL
     bool active(void);
-    
+
     // create outputs for tailsitters
     void output(void);
 

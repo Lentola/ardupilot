@@ -537,6 +537,21 @@ const AP_Param::GroupInfo QuadPlane::var_info2[] = {
     // @User: Standard
     AP_GROUPINFO("BCK_PIT_LIM", 38, QuadPlane, q_bck_pitch_lim, 10.0f),
 
+    // @Param: MAX_T_L_ANG
+    // @DisplayName: Max transition lean angle
+    // @Description: Maximum angle for the aircraft at the start of VTOL transitions
+    // @Units: cdeg
+    // @Range_ 100.0 4500.0
+    // @Increment: 100.0
+    AP_GROUPINFO("MAX_T_L_ANG", 39, QuadPlane, vtol_stabilisation.max_transition_lean_angle, 500.0f),
+
+    // @Param: MAX_STB_TIM
+    // @DisplayName: Max stabilisation time
+    // @Description: Maximum time for the aircraft to stay in limited angle
+    // @Units: ms
+    // @Range_ 0 3000
+    AP_GROUPINFO("MAX_STB_TIM", 39, QuadPlane, vtol_stabilisation.max_stabilisation_time, 3000.0f),
+
     AP_GROUPEND};
 
 /*
@@ -2024,9 +2039,9 @@ void QuadPlane::update(void)
         // output to motors
         motors_output();
         const uint32_t time_now = millis();
-        if (time_now - last_stabilisation > 1000)
+        if (time_now - vtol_stabilisation.latest_transition_ms > vtol_stabilisation.max_stabilisation_time);
         {
-            gcs().send_text(MAV_SEVERITY_DEBUG, "1 SECOND, SETTING ANGLE TO 45 DEGREES");
+            gcs().send_text(MAV_SEVERITY_DEBUG, "STABILISATION MAX TIME MET, SETTING ANGLE TO DEFAULT");
             pos_control->set_lean_angle_max_cd(0);
         }
 
@@ -2305,13 +2320,11 @@ bool QuadPlane::handle_do_vtol_transition(enum MAV_VTOL_STATE state) const
         {
             gcs().send_text(MAV_SEVERITY_NOTICE, "Entered VTOL mode");
         }
-        pos_control->set_lean_angle_max_cd(200);
-        plane.quadplane.last_stabilisation = millis();
+        plane.quadplane.limit_transition_lean_angle();
         plane.auto_state.vtol_mode = true;
         // This is a precaution. It should be looked after by the call to QuadPlane::mode_enter(void) on mode entry.
         plane.quadplane.q_fwd_throttle = 0.0f;
         plane.quadplane.q_fwd_pitch_lim_cd = 100.0f * plane.quadplane.q_fwd_pitch_lim;
-        gcs().send_text(MAV_SEVERITY_DEBUG, "MAX ANGLE AT HANDLE DO VTOL %f", pos_control->get_lean_angle_max_cd());
         return true;
 
     case MAV_VTOL_STATE_FW:
@@ -2329,6 +2342,14 @@ bool QuadPlane::handle_do_vtol_transition(enum MAV_VTOL_STATE state) const
 
     gcs().send_text(MAV_SEVERITY_NOTICE, "Invalid VTOL mode");
     return false;
+}
+
+void QuadPlane::limit_transition_lean_angle()
+{
+    uint32_t now = millis();
+    // Limit lean angle to set parameter
+    pos_control->set_lean_angle_max_cd(vtol_stabilisation.max_transition_lean_angle);
+    vtol_stabilisation.latest_transition_ms = now;
 }
 
 /*
