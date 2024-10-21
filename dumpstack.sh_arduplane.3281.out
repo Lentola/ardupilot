@@ -1,0 +1,24 @@
+
+warning: opening /proc/PID/mem file for lwp 3281.3281 failed: No such file or directory (2)
+[New LWP 3282]
+Failed to read a valid object file image from memory.
+0x00007fb016b3a42f in ?? ()
+#0  0x00007fb016b3a42f in ?? ()
+No symbol table info available.
+Backtrace stopped: Cannot access memory at address 0x7ffff09ad520
+
+Thread 2 (LWP 3282 "SocketCreator"):
+#0  0x00007fb016ae1117 in ?? ()
+No symbol table info available.
+Backtrace stopped: Cannot access memory at address 0x7fb016a1fcc0
+
+Thread 1 (LWP 3281 "arduplane"):
+#0  0x00007fb016b3a42f in ?? ()
+No symbol table info available.
+Backtrace stopped: Cannot access memory at address 0x7ffff09ad520
+A debugging session is active.
+
+	Inferior 1 [process 3281] will be detached.
+
+Quit anyway? (y or n) [answered Y; input not from terminal]
+[Inferior 1 (process 3281) detached]

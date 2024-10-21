@@ -1,0 +1,64 @@
+
+warning: opening /proc/PID/mem file for lwp 3281.3281 failed: No such file or directory (2)
+[New LWP 3282]
+Failed to read a valid object file image from memory.
+0x00007fb016b3a42f in ?? ()
+warning: target file /proc/3281/cmdline contained unexpected null characters
+warning: Memory read failed for corefile section, 135168 bytes at 0x7fb010000000.
+warning: Memory read failed for corefile section, 1048576 bytes at 0x7fb010021000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016220000.
+warning: Memory read failed for corefile section, 1048576 bytes at 0x7fb016221000.
+warning: Memory read failed for corefile section, 12288 bytes at 0x7fb016a30000.
+warning: Memory read failed for corefile section, 8192 bytes at 0x7fb016a40000.
+warning: Memory read failed for corefile section, 163840 bytes at 0x7fb016a50000.
+warning: Memory read failed for corefile section, 1048576 bytes at 0x7fb016a78000.
+warning: Memory read failed for corefile section, 360448 bytes at 0x7fb016c0d000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016c65000.
+warning: Memory read failed for corefile section, 16384 bytes at 0x7fb016c66000.
+warning: Memory read failed for corefile section, 8192 bytes at 0x7fb016c6a000.
+warning: Memory read failed for corefile section, 53248 bytes at 0x7fb016c6c000.
+warning: Memory read failed for corefile section, 12288 bytes at 0x7fb016c80000.
+warning: Memory read failed for corefile section, 94208 bytes at 0x7fb016c83000.
+warning: Memory read failed for corefile section, 16384 bytes at 0x7fb016c9a000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016c9e000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016c9f000.
+warning: Memory read failed for corefile section, 57344 bytes at 0x7fb016ca0000.
+warning: Memory read failed for corefile section, 507904 bytes at 0x7fb016cae000.
+warning: Memory read failed for corefile section, 372736 bytes at 0x7fb016d2a000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016d85000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016d86000.
+warning: Memory read failed for corefile section, 630784 bytes at 0x7fb016d90000.
+warning: Memory read failed for corefile section, 1048576 bytes at 0x7fb016e2a000.
+warning: Memory read failed for corefile section, 454656 bytes at 0x7fb016f3b000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016faa000.
+warning: Memory read failed for corefile section, 45056 bytes at 0x7fb016fab000.
+warning: Memory read failed for corefile section, 12288 bytes at 0x7fb016fb6000.
+warning: Memory read failed for corefile section, 12288 bytes at 0x7fb016fb9000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016fd0000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016fd1000.
+warning: Memory read failed for corefile section, 167936 bytes at 0x7fb016fd2000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb016ffb000.
+warning: Memory read failed for corefile section, 40960 bytes at 0x7fb016ffc000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb017006000.
+warning: Memory read failed for corefile section, 8192 bytes at 0x7fb017008000.
+warning: Memory read failed for corefile section, 8192 bytes at 0x7fb01700a000.
+warning: Memory read failed for corefile section, 8192 bytes at 0x7fb017010000.
+warning: Memory read failed for corefile section, 372736 bytes at 0x7fb017017000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb017072000.
+warning: Memory read failed for corefile section, 1048576 bytes at 0x7fb017073000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb01732f000.
+warning: Memory read failed for corefile section, 716800 bytes at 0x7fb017330000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7fb0173df000.
+warning: Memory read failed for corefile section, 184320 bytes at 0x7fb0173e0000.
+warning: Memory read failed for corefile section, 8192 bytes at 0x7fb01740d000.
+warning: Memory read failed for corefile section, 217088 bytes at 0x7fb01740f000.
+warning: Memory read failed for corefile section, 581632 bytes at 0x7fffe88b9000.
+warning: Memory read failed for corefile section, 1048576 bytes at 0x7ffff01b0000.
+warning: Memory read failed for corefile section, 4096 bytes at 0x7ffff0bb3000.
+Saved corefile ap-3319.core
+A debugging session is active.
+
+	Inferior 1 [process 3281] will be detached.
+
+Quit anyway? (y or n) [answered Y; input not from terminal]
+[Inferior 1 (process 3281) detached]

@@ -199,6 +199,8 @@ public:
 
     void limit_transition_lean_angle();
 
+    void release_transition_lean_angle();
+
 private:
     AP_AHRS &ahrs;
 
@@ -468,6 +470,16 @@ private:
         uint32_t latest_transition_ms;
         AP_Float max_transition_lean_angle;
         AP_Float max_stabilisation_time;
+        // Custom enum for stabilisation states
+        enum
+        {
+            INACTIVE = 0,
+            STABILIZING,
+            RELEASING
+        } stabilisation_status;
+
+        float target_return_angle;
+        uint32_t latest_increment_ms;
     } vtol_stabilisation;
 
     // transition logic

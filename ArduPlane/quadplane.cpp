@@ -550,7 +550,7 @@ const AP_Param::GroupInfo QuadPlane::var_info2[] = {
     // @Description: Maximum time for the aircraft to stay in limited angle
     // @Units: ms
     // @Range_ 0 3000
-    AP_GROUPINFO("MAX_STB_TIM", 39, QuadPlane, vtol_stabilisation.max_stabilisation_time, 3000.0f),
+    AP_GROUPINFO("MAX_STB_TIM", 40, QuadPlane, vtol_stabilisation.max_stabilisation_time, 3000.0f),
 
     AP_GROUPEND};
 
@@ -2039,10 +2039,15 @@ void QuadPlane::update(void)
         // output to motors
         motors_output();
         const uint32_t time_now = millis();
-        if (time_now - vtol_stabilisation.latest_transition_ms > vtol_stabilisation.max_stabilisation_time);
+        if (time_now - vtol_stabilisation.latest_transition_ms > vtol_stabilisation.max_stabilisation_time && vtol_stabilisation.stabilisation_status == vtol_stabilisation.STABILIZING)
         {
-            gcs().send_text(MAV_SEVERITY_DEBUG, "STABILISATION MAX TIME MET, SETTING ANGLE TO DEFAULT");
-            pos_control->set_lean_angle_max_cd(0);
+            gcs().send_text(MAV_SEVERITY_DEBUG, "STABILISATION MAX TIME MET, RELEASING ANGLE TO DEFAULT");
+            vtol_stabilisation.stabilisation_status = vtol_stabilisation.RELEASING;
+        }
+
+        if (vtol_stabilisation.stabilisation_status == vtol_stabilisation.RELEASING)
+        {
+            release_transition_lean_angle();
         }
 
         transition->VTOL_update();
@@ -2302,7 +2307,6 @@ void QuadPlane::motors_output(bool run_rate_controller)
  */
 bool QuadPlane::handle_do_vtol_transition(enum MAV_VTOL_STATE state) const
 {
-    gcs().send_text(MAV_SEVERITY_DEBUG, "MAX ANGLE %f", pos_control->get_lean_angle_max_cd());
     if (!available())
     {
         gcs().send_text(MAV_SEVERITY_NOTICE, "VTOL not available");
@@ -2346,10 +2350,33 @@ bool QuadPlane::handle_do_vtol_transition(enum MAV_VTOL_STATE state) const
 
 void QuadPlane::limit_transition_lean_angle()
 {
+    vtol_stabilisation.stabilisation_status = vtol_stabilisation.STABILIZING;
+    vtol_stabilisation.target_return_angle = pos_control->get_lean_angle_max_cd();
     uint32_t now = millis();
     // Limit lean angle to set parameter
     pos_control->set_lean_angle_max_cd(vtol_stabilisation.max_transition_lean_angle);
     vtol_stabilisation.latest_transition_ms = now;
+}
+
+void QuadPlane::release_transition_lean_angle()
+{
+    uint32_t now = millis();
+    if (now - vtol_stabilisation.latest_increment_ms > 100)
+    {
+        float new_angle = pos_control->get_lean_angle_max_cd() + 200;
+
+        if (new_angle <= vtol_stabilisation.target_return_angle)
+        {
+            pos_control->set_lean_angle_max_cd(new_angle);
+            gcs().send_text(MAV_SEVERITY_DEBUG, "Increasing angle to %f", new_angle);
+        }
+        else
+        {
+            vtol_stabilisation.stabilisation_status = vtol_stabilisation.INACTIVE;
+            gcs().send_text(MAV_SEVERITY_DEBUG, "Stabilisation complete, setting angle to default %f", vtol_stabilisation.target_return_angle);
+        }
+        vtol_stabilisation.latest_increment_ms = millis();
+    }
 }
 
 /*
@@ -2505,7 +2532,6 @@ void QuadPlane::run_xy_controller(float accel_limit)
     }
     pos_control->set_lean_angle_max_cd(MIN(4500, MAX(accel_to_angle(accel_limit) * 100, aparm.angle_max)));
 
-    gcs().send_text(MAV_SEVERITY_DEBUG, "MAX ANGLE AT RUN XY CONTROLLER %f", pos_control->get_lean_angle_max_cd());
     if (q_fwd_throttle > 0.95f)
     {
         // prevent wind up of the velocity controller I term due to a saturated forward throttle
@@ -4042,7 +4068,6 @@ bool QuadPlane::verify_vtol_land(void)
             poscontrol.set_state(QPOS_LAND_DESCEND);
             poscontrol.pilot_correction_done = false;
             pos_control->set_lean_angle_max_cd(0);
-            gcs().send_text(MAV_SEVERITY_DEBUG, "MAX ANGLE AT VERIFY VTOL LAND %f", pos_control->get_lean_angle_max_cd());
             poscontrol.xy_correction.zero();
 #if AP_FENCE_ENABLED
             plane.fence.auto_disable_fence_for_landing();
@@ -5150,7 +5175,6 @@ void QuadPlane::mode_enter(void)
     if (available())
     {
         pos_control->set_lean_angle_max_cd(0);
-        gcs().send_text(MAV_SEVERITY_DEBUG, "MAX ANGLE AT MODE ENTER %f", pos_control->get_lean_angle_max_cd());
     }
     poscontrol.xy_correction.zero();
     poscontrol.velocity_match.zero();
