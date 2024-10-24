@@ -483,6 +483,7 @@ private:
 
         AP_Float upright_angle_cd;
         uint32_t upright_ms;
+        bool upright = false;
     } vtol_stabilisation;
 
     // transition logic

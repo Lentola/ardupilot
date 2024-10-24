@@ -558,8 +558,7 @@ const AP_Param::GroupInfo QuadPlane::var_info2[] = {
     // @Units: cdeg
     // @Range_ 100.0 4500.0
     // @Increment: 100.0
-    AP_GROUPINFO("UPRIGHT_ANG", 39, QuadPlane, vtol_stabilisation.upright_angle_cd, 1000.0f),
-
+    AP_GROUPINFO("UPRIGHT_ANG", 41, QuadPlane, vtol_stabilisation.upright_angle_cd, 1000.0f),
 
     AP_GROUPEND};
 
@@ -2048,15 +2047,26 @@ void QuadPlane::update(void)
         // output to motors
         motors_output();
         const uint32_t time_now = millis();
-        if (vtol_stabilisation.status == vtol_stabilisation.STABILIZING)
+        if (vtol_stabilisation.status == vtol_stabilisation.STABILIZING && !tailsitter.in_vtol_transition())
         {
             if (pos_control->get_pitch_cd() < vtol_stabilisation.upright_angle_cd && pos_control->get_pitch_cd() > -vtol_stabilisation.upright_angle_cd)
             {
-                vtol_stabilisation.upright_ms = time_now;
+                gcs().send_text(MAV_SEVERITY_DEBUG, "CONSIDERED UPRIGHT FOR %d", time_now - vtol_stabilisation.upright_ms);
+                gcs().send_text(MAV_SEVERITY_DEBUG, "PITCH %f", pos_control->get_pitch_cd());
+                if (!vtol_stabilisation.upright)
+                {
+                    vtol_stabilisation.upright_ms = time_now;
+                    vtol_stabilisation.upright = true;
+                }
             }
-            if (time_now - vtol_stabilisation.latest_transition_ms > vtol_stabilisation.max_stabilisation_time || time_now - vtol_stabilisation.upright_ms > 2000)
+            else
             {
-                gcs().send_text(MAV_SEVERITY_DEBUG, "STABILISATION MAX TIME MET, RELEASING ANGLE TO DEFAULT");
+                gcs().send_text(MAV_SEVERITY_DEBUG, "NOT CONSIDERED UPRIGHT");
+                vtol_stabilisation.upright = false;
+            }
+            if ((time_now - vtol_stabilisation.latest_transition_ms) > vtol_stabilisation.max_stabilisation_time || ((time_now - vtol_stabilisation.upright_ms) > 6000 && vtol_stabilisation.upright))
+            {
+                gcs().send_text(MAV_SEVERITY_DEBUG, "STABILISATION TIME %d, UPRIGHT TIME %d", (time_now - vtol_stabilisation.latest_transition_ms), (time_now - vtol_stabilisation.upright_ms));
                 vtol_stabilisation.status = vtol_stabilisation.RELEASING;
             }
         }
@@ -2365,17 +2375,17 @@ bool QuadPlane::handle_do_vtol_transition(enum MAV_VTOL_STATE state) const
 
 void QuadPlane::limit_transition_lean_angle()
 {
-    vtol_stabilisation.stabilisation_status = vtol_stabilisation.STABILIZING;
+    vtol_stabilisation.status = vtol_stabilisation.STABILIZING;
     vtol_stabilisation.target_return_angle = pos_control->get_lean_angle_max_cd();
     uint32_t now = millis();
     // Limit lean angle to set parameter
     pos_control->set_lean_angle_max_cd(vtol_stabilisation.max_transition_lean_angle_cd);
     vtol_stabilisation.latest_transition_ms = now;
+    vtol_stabilisation.upright_ms = now;
 }
 
 void QuadPlane::release_transition_lean_angle()
 {
-    float angle = pos_control->get_pitch_cd();
     uint32_t now = millis();
     if (now - vtol_stabilisation.latest_increment_ms > 100)
     {
@@ -2388,7 +2398,7 @@ void QuadPlane::release_transition_lean_angle()
         }
         else
         {
-            vtol_stabilisation.stabilisation_status = vtol_stabilisation.INACTIVE;
+            vtol_stabilisation.status = vtol_stabilisation.INACTIVE;
             gcs().send_text(MAV_SEVERITY_DEBUG, "Stabilisation complete, setting angle to default %f", vtol_stabilisation.target_return_angle);
         }
         vtol_stabilisation.latest_increment_ms = millis();
