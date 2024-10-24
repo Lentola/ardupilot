@@ -465,21 +465,24 @@ private:
     uint32_t last_att_control_ms;
 
     // custom struct for handling stabilisation in VTOL transitions
-    struct
+    struct VTOL_STABILISATION
     {
         uint32_t latest_transition_ms;
-        AP_Float max_transition_lean_angle;
+        AP_Float max_transition_lean_angle_cd;
         AP_Float max_stabilisation_time;
         // Custom enum for stabilisation states
-        enum
+        enum STATUS
         {
             INACTIVE = 0,
             STABILIZING,
             RELEASING
-        } stabilisation_status;
+        } status;
 
         float target_return_angle;
         uint32_t latest_increment_ms;
+
+        AP_Float upright_angle_cd;
+        uint32_t upright_ms;
     } vtol_stabilisation;
 
     // transition logic
