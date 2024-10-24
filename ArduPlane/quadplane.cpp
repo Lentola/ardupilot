@@ -2361,9 +2361,9 @@ void QuadPlane::limit_transition_lean_angle()
 void QuadPlane::release_transition_lean_angle()
 {
     uint32_t now = millis();
-    if (now - vtol_stabilisation.latest_increment_ms > 100)
+    if (now - vtol_stabilisation.latest_increment_ms > 500)
     {
-        float new_angle = pos_control->get_lean_angle_max_cd() + 200;
+        float new_angle = pos_control->get_lean_angle_max_cd() + 100;
 
         if (new_angle <= vtol_stabilisation.target_return_angle)
         {
@@ -2915,7 +2915,6 @@ void QuadPlane::vtol_position_controller(void)
         {
             break;
         }
-
         const Vector2f diff_wp = plane.current_loc.get_distance_NE(loc);
         const float distance = diff_wp.length();
         const Vector2f rel_groundspeed_vector = landing_closing_velocity();

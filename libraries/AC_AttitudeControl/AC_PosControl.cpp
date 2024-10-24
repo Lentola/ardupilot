@@ -514,8 +514,6 @@ void AC_PosControl::init_xy_controller()
     _yaw_target = att_target_euler_cd.z; // todo: this should be thrust vector heading, not yaw.
     _yaw_rate_target = 0.0f;
     // _angle_max_override_cd = 0.0;
-    
-    gcs().send_text(MAV_SEVERITY_DEBUG, "MAX ANGLE AT INIT XY CONTROLLER %f", get_lean_angle_max_cd());
 
 
     _pos_target.xy() = _inav.get_position_xy_cm().topostype();
